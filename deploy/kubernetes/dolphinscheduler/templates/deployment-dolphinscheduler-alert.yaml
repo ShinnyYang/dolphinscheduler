@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- if and .Values.alert.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -113,7 +114,12 @@ spec:
               name: {{ include "dolphinscheduler.fullname" . }}-alert
             - name: config-volume
               mountPath: /opt/dolphinscheduler/conf/common.properties
-              subPath: common_properties
+              subPath: common.properties
+            {{- if .Values.alert.enableCustomizedConfig }}
+            - name: alert-config-volume
+              mountPath: /opt/dolphinscheduler/conf/application.yaml
+              subPath: application.yaml
+            {{- end }}
       volumes:
         - name: {{ include "dolphinscheduler.fullname" . }}-alert
           {{- if .Values.alert.persistentVolumeClaim.enabled }}
@@ -125,3 +131,9 @@ spec:
         - name: config-volume
           configMap:
             name: {{ include "dolphinscheduler.fullname" . }}-configs
+        {{- if .Values.alert.enableCustomizedConfig }}
+        - name: alert-config-volume
+          configMap:
+            name: {{ include "dolphinscheduler.fullname" . }}-alert
+        {{- end }}
+{{- end }}
